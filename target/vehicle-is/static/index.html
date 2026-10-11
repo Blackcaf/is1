@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информационная система «Транспортные средства»</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+    <h1>🚗 Vehicle IS</h1>
+    <nav class="menu">
+        <a href="#/" class="menu-link active">Список объектов</a>
+        <a href="#/new" class="menu-link">Создать объект</a>
+        <a href="#/special" class="menu-link">Специальные операции</a>
+    </nav>
+    <span id="sse-status" class="sse-status" title="Статус синхронизации с сервером">● offline</span>
+</header>
+
+<main id="app"></main>
+
+<footer class="footer">Spring MVC + EclipseLink + PostgreSQL · SSE-синхронизация между клиентами</footer>
+
+<!-- Модальное окно создания/редактирования -->
+<div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h2 id="modal-title">Форма</h2>
+            <button class="btn-close" onclick="App.closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
