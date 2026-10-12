@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: ru.itmo.vehicle.VehicleServiceTest
 -------------------------------------------------------------------------------
-Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.232 s -- in ru.itmo.vehicle.VehicleServiceTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.338 s -- in ru.itmo.vehicle.VehicleServiceTest

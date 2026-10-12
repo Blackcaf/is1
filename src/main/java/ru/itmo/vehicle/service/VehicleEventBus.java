@@ -3,10 +3,6 @@ package ru.itmo.vehicle.service;
 import org.springframework.stereotype.Service;
 import ru.itmo.vehicle.domain.Vehicle;
 
-/**
- * Шина событий: позволяет интерфейсам (и другим клиентам) автоматически
- * узнавать об изменениях объектов (добавление/изменение/удаление).
- */
 @Service
 public class VehicleEventBus {
 
@@ -32,7 +28,6 @@ public class VehicleEventBus {
             try {
                 l.onVehicleChanged(action, vehicle);
             } catch (Exception ignored) {
-                // подписчик не должен ронять бизнес-операцию
             }
         }
     }

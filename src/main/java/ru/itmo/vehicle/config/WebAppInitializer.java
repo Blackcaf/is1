@@ -2,9 +2,6 @@ package ru.itmo.vehicle.config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-/**
- * Регистрация DispatcherServlet без web.xml.
- */
 public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     @Override

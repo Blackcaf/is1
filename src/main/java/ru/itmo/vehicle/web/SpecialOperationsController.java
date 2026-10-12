@@ -11,9 +11,6 @@ import ru.itmo.vehicle.service.VehicleService;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST API специальных операций бизнес-логики.
- */
 @RestController
 @RequestMapping("/api/special")
 public class SpecialOperationsController {
@@ -21,13 +18,11 @@ public class SpecialOperationsController {
     @Autowired
     private VehicleService service;
 
-    /** 1. Сумма значений поля fuelConsumption для всех объектов. */
     @GetMapping("/fuel-consumption-sum")
     public Map<String, Object> sumFuelConsumption() {
         return Map.of("result", service.sumFuelConsumption());
     }
 
-    /** 2. Один (любой) объект с минимальным значением поля type. */
     @GetMapping("/min-by-type")
     public ResponseEntity<?> minByType() {
         return service.minByType()
@@ -36,7 +31,6 @@ public class SpecialOperationsController {
                         .body(Map.of("error", "Объектов с заполненным полем type не найдено")));
     }
 
-    /** 3. Количество объектов, у которых fuelType больше заданного. */
     @GetMapping("/count-fuel-type-greater")
     public ResponseEntity<?> countFuelTypeGreaterThan(@RequestParam String fuelType) {
         try {
@@ -51,7 +45,6 @@ public class SpecialOperationsController {
         }
     }
 
-    /** 4. Все транспортные средства заданного типа. */
     @GetMapping("/by-type")
     public ResponseEntity<?> byType(@RequestParam String type) {
         try {
@@ -67,7 +60,6 @@ public class SpecialOperationsController {
         }
     }
 
-    /** 5. Добавить транспортному средству с заданным id указанное число колёс. */
     @PostMapping("/{id}/wheels")
     public ResponseEntity<?> addWheels(@PathVariable Long id, @RequestParam long count) {
         try {

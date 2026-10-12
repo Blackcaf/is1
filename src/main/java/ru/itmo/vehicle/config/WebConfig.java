@@ -14,9 +14,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.List;
 
-/**
- * Конфигурация Web-слоя (Spring MVC).
- */
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = "ru.itmo.vehicle.web")

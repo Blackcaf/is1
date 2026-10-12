@@ -13,13 +13,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Реализация репозитория на EclipseLink (JPA).
- */
 @Repository
 public class VehicleRepositoryImpl implements VehicleRepository {
-
-    /** Разрешённые поля для фильтрации/сортировки (защита от SQL/JPQL-инъекций). */
     private static final Map<String, String> SORTABLE_FIELDS = Map.ofEntries(
             Map.entry("id", "v.id"),
             Map.entry("name", "v.name"),
@@ -111,8 +106,6 @@ public class VehicleRepositoryImpl implements VehicleRepository {
         String col = (field != null && SORTABLE_FIELDS.containsKey(field)) ? SORTABLE_FIELDS.get(field) : "v.id";
         jpql.append(" ORDER BY ").append(col).append(asc ? " ASC" : " DESC");
     }
-
-    /* ---------------- special operations ---------------- */
 
     @Override
     public double sumFuelConsumption() {

@@ -20,10 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
-/**
- * Бизнес-логика системы. Специальные операции выполняются здесь
- * без прямого использования функций и процедур БД (частично — на данных, полученных через репозиторий).
- */
 @Service
 public class VehicleService {
 
@@ -39,14 +35,12 @@ public class VehicleService {
     @Autowired
     private VehicleEventBus eventBus;
 
-    /* ------------------------- CRUD ------------------------- */
-
     @Transactional
     public Vehicle create(Vehicle vehicle) {
         validate(vehicle);
         resolveCoordinates(vehicle);
         vehicle.setId(null);
-        vehicle.setCreationDate(null); // генерируется автоматически
+        vehicle.setCreationDate(null);
         Vehicle saved = repository.save(vehicle);
         eventBus.publish(VehicleEventBus.Action.CREATED, copyOf(saved));
         return saved;
@@ -61,7 +55,6 @@ public class VehicleService {
     public Vehicle update(Long id, Vehicle changes) {
         Vehicle existing = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Транспортное средство с id=" + id + " не найдено"));
-        // creationDate и id изменению не подлежат
         changes.setId(existing.getId());
         changes.setCreationDate(existing.getCreationDate());
         validate(changes);
@@ -79,8 +72,6 @@ public class VehicleService {
         eventBus.publish(VehicleEventBus.Action.DELETED, copyOf(v));
     }
 
-    /* ------------------------- таблица ------------------------- */
-
     @Transactional(readOnly = true)
     public List<Vehicle> page(String filterField, String filterValue, String sortField, boolean asc,
                               int page, int size) {
@@ -94,19 +85,13 @@ public class VehicleService {
         return repository.countFiltered(filterField, filterValue);
     }
 
-    /* ------------------------- специальные операции ------------------------- */
-
-    /** 1. Сумма значений поля fuelConsumption для всех объектов. */
     @Transactional(readOnly = true)
     public double sumFuelConsumption() {
         return repository.sumFuelConsumption();
     }
 
-    /** 2. Один (любой) объект с минимальным значением поля type (минимум по ordinal enum). */
     @Transactional(readOnly = true)
     public Optional<Vehicle> minByType() {
-        // Реализация бизнес-уровня: находим минимум по ordinal среди всех объектов,
-        // не полагаясь на порядок сортировки, задаваемый СУБД для enum.
         List<Vehicle> all = repository.findAll();
         Vehicle best = null;
         for (Vehicle v : all) {
@@ -118,13 +103,11 @@ public class VehicleService {
         return Optional.ofNullable(best);
     }
 
-    /** 3. Количество объектов, у которых fuelType больше заданного. */
     @Transactional(readOnly = true)
     public long countFuelTypeGreaterThan(FuelType fuelType) {
         if (fuelType == null) {
             throw new ValidationException(Map.of("fuelType", "Не задан тип топлива для сравнения"));
         }
-        // Сравнение "больше" — по ordinal значения enum.
         long count = 0;
         for (Vehicle v : repository.findAll()) {
             if (v.getFuelType() != null && v.getFuelType().ordinal() > fuelType.ordinal()) {
@@ -134,7 +117,6 @@ public class VehicleService {
         return count;
     }
 
-    /** 4. Все транспортные средства заданного типа. */
     @Transactional(readOnly = true)
     public List<Vehicle> findByType(VehicleType type) {
         if (type == null) {
@@ -143,7 +125,6 @@ public class VehicleService {
         return repository.findByType(type);
     }
 
-    /** 5. Добавить транспортному средству с заданным id указанное число колёс. */
     @Transactional
     public Vehicle addWheels(Long id, long wheelsToAdd) {
         if (wheelsToAdd <= 0) {
@@ -178,12 +159,9 @@ public class VehicleService {
         coordinatesRepository.delete(oldCoordinates);
     }
 
-    /* ------------------------- вспомогательное ------------------------- */
-
     public void validate(Vehicle vehicle) {
-        // creationDate генерируется автоматически (см. @PrePersist), при создании её нет — исключаем из проверки
         Set<ConstraintViolation<Vehicle>> violations = validator.validate(vehicle, Default.class);
-        if (vehicle.getId() == null) { // создание: id и creationDate генерируются автоматически
+        if (vehicle.getId() == null) {
             violations.removeIf(cv -> {
                 String path = cv.getPropertyPath().toString();
                 return path.equals("creationDate") || path.equals("id");
@@ -220,7 +198,6 @@ public class VehicleService {
         vehicle.setCoordinates(existing);
     }
 
-    /** Снимок объекта для рассылки событий (вне контекста персистентности). */
     static Vehicle copyOf(Vehicle src) {
         Vehicle c = new Vehicle();
         c.setId(src.getId());

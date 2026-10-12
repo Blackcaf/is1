@@ -15,12 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
-
-/**
- * REST API для операций CRUD над Vehicle + SSE-канал для мгновенной
- * синхронизации изменений между всеми клиентами.
- */
 @RestController
 @RequestMapping("/api/vehicles")
 public class VehicleController {
@@ -32,10 +26,6 @@ public class VehicleController {
     private VehicleEventBus eventBus;
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-    private final AtomicLong sseId = new AtomicLong();
-
-    /* ------------------------- CRUD ------------------------- */
-
     @PostMapping
     public ResponseEntity<?> create(@RequestBody VehicleDto dto) {
         try {
@@ -80,8 +70,6 @@ public class VehicleController {
         }
     }
 
-    /* ------------------------- таблица (пагинация/фильтр/сортировка) ------------------------- */
-
     @GetMapping
     public Map<String, Object> list(@RequestParam(required = false) String filterField,
                                     @RequestParam(required = false) String filterValue,
@@ -95,11 +83,9 @@ public class VehicleController {
         return Map.of("items", items, "total", total, "page", page, "size", size);
     }
 
-    /* ------------------------- SSE: автообновление у всех клиентов ------------------------- */
-
     @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter events() {
-        SseEmitter emitter = new SseEmitter(0L); // без таймаута
+        SseEmitter emitter = new SseEmitter(0L);
         VehicleEventBus.Listener listener = (action, vehicle) -> {
             try {
                 emitter.send(SseEmitter.event()

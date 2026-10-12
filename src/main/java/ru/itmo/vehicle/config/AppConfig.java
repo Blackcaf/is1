@@ -16,9 +16,6 @@ import javax.validation.Validator;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Конфигурация слоя хранения (Spring + EclipseLink) и бизнес-слоя.
- */
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(basePackages = {"ru.itmo.vehicle.repo", "ru.itmo.vehicle.service"})
@@ -32,7 +29,6 @@ public class AppConfig {
         emf.setJpaVendorAdapter(new EclipseLinkJpaVendorAdapter());
         emf.setJpaDialect(new EclipseLinkJpaDialect());
         emf.setJpaPropertyMap(Map.of(
-                // Переопределение учётных данных через переменные окружения / системные свойства
                 "javax.persistence.jdbc.user", resolve("DB_USER", System.getProperty("user.name", "")),
                 "javax.persistence.jdbc.password", resolve("DB_PASSWORD", "")
         ));

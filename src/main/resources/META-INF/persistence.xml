@@ -12,7 +12,6 @@
         <class>ru.itmo.vehicle.domain.ZonedDateTimeConverter</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
-            <!-- Кафедральный сервер PostgreSQL: хост pg, БД studs, пользователь/пароль = учётные данные студента -->
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://pg:5432/studs"/>
             <property name="javax.persistence.jdbc.user" value="${env.DB_USER}"/>
@@ -22,7 +21,6 @@
             <property name="eclipselink.logging.level" value="WARNING"/>
             <property name="eclipselink.logging.level.sql" value="WARNING"/>
             <property name="eclipselink.weaving" value="static"/>
-            <!-- Схема создаётся/поддерживается ORM (CHECK-ограничения добавляются скриптом schema-postgres.sql) -->
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.ddl-generation.output-mode" value="none"/>
         </properties>

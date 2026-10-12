@@ -1,9 +1,3 @@
-/* ============================================================
- * Vehicle IS — клиент (vanilla JS + hash-router).
- * Все операции выполняются на сервере (Spring MVC REST API),
- * изменения синхронизируются с PostgreSQL через EclipseLink.
- * Автообновление у всех клиентов — через SSE.
- * ============================================================ */
 "use strict";
 
 const API = (() => {
@@ -44,8 +38,6 @@ const state = {
     items: []
 };
 
-/* ------------------------- helpers ------------------------- */
-
 function el(html) {
     const t = document.createElement("template");
     t.innerHTML = html.trim();
@@ -84,8 +76,6 @@ function toast(msg) {
     toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
 }
 
-/* ------------------------- роутер ------------------------- */
-
 const routes = {
     "/": renderListPage,
     "/new": () => { openVehicleForm(null, "Создание объекта"); location.hash = "#/"; },
@@ -112,8 +102,6 @@ function router() {
 }
 
 window.addEventListener("hashchange", router);
-
-/* ------------------------- страница списка ------------------------- */
 
 async function renderListPage() {
     const app = document.getElementById("app");
@@ -244,8 +232,6 @@ function drawPagination() {
     p.querySelector("#pg-size").onchange = e => { state.size = Number(e.target.value); state.page = 1; refreshTable(); };
 }
 
-/* ------------------------- форма (отдельное диалоговое окно) ------------------------- */
-
 function fieldHtml(name, label, inputHtml, hint) {
     return `<div class="field" data-field="${name}">
         <label>${esc(label)}</label>${inputHtml}
@@ -292,7 +278,6 @@ function vehicleFormHtml(v = {}, coordinates = []) {
     </form>`;
 }
 
-/** Клиентская валидация (зеркалирует ограничения класса). */
 function clientValidate(form) {
     const errors = {};
     const val = n => form.querySelector(`[name="${n}"]`).value.trim();
@@ -412,8 +397,6 @@ document.getElementById("modal-backdrop").addEventListener("click", e => {
     if (e.target.id === "modal-backdrop") closeModal();
 });
 
-/* ------------------------- просмотр объекта (отдельное окно) ------------------------- */
-
 async function renderDetailPage(id) {
     const app = document.getElementById("app");
     app.innerHTML = `<h2 class="page-title">Информация об объекте №${id}</h2><div class="panel">Загрузка…</div>`;
@@ -451,8 +434,6 @@ async function renderDetailPage(id) {
     document.getElementById("d-del").onclick = () => confirmDelete(id);
 }
 
-/* ------------------------- удаление ------------------------- */
-
 async function confirmDelete(id) {
     if (!confirm(`Удалить транспортное средство №${id}?`)) return;
     try {
@@ -464,8 +445,6 @@ async function confirmDelete(id) {
         toast(e.message);
     }
 }
-
-/* ------------------------- специальные операции ------------------------- */
 
 async function renderSpecialPage() {
     const app = document.getElementById("app");
@@ -544,8 +523,6 @@ async function renderSpecialPage() {
     };
 }
 
-/* ------------------------- SSE: автообновление таблицы у всех клиентов ------------------------- */
-
 let sseSource = null;
 function connectSse() {
     if (sseSource) sseSource.close();
@@ -572,8 +549,6 @@ function connectSse() {
     sseSource.addEventListener("updated", handler("updated"));
     sseSource.addEventListener("deleted", handler("deleted"));
 }
-
-/* ------------------------- init ------------------------- */
 
 window.App = { closeModal, openVehicleForm };
 document.addEventListener("DOMContentLoaded", () => {

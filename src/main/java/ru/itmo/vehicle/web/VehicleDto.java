@@ -8,9 +8,6 @@ import ru.itmo.vehicle.domain.VehicleType;
 
 import java.time.ZonedDateTime;
 
-/**
- * DTO для передачи Vehicle в JSON.
- */
 public class VehicleDto {
 
     public Long id;
@@ -50,8 +47,7 @@ public class VehicleDto {
         v.setId(id);
         try {
             v.setName(name);
-        } catch (IllegalArgumentException ignored) { // будет обработано валидацией сервиса
-        }
+        } catch (IllegalArgumentException ignored) {}
         v.setCoordinates(coordinates);
         v.setCreationDate(creationDate);
         v.setType(type);

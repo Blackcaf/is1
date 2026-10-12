@@ -22,9 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Тесты бизнес-логики (специальные операции + валидация) без БД.
- */
 class VehicleServiceTest {
 
     private VehicleService service;

@@ -9,10 +9,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import java.time.ZonedDateTime;
 
-/**
- * Основное хранимое лицо системы.
- * Требования к полям обеспечены на уровне ORM (аннотации + валидация) и БД (CHECK-ограничения, NOT NULL, UNIQUE).
- */
 @Entity
 @Table(name = "vehicle",
         uniqueConstraints = @UniqueConstraint(columnNames = "id"),
@@ -22,12 +18,12 @@ public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id; // Генерируется автоматически (БД), > 0, уникально
+    private Long id;
 
     @Column(name = "name", nullable = false, length = 500)
     @NotNull(message = "Поле name не может быть null")
     @NotBlank(message = "Строка name не может быть пустой")
-    private String name; // Непустая строка (проверка в сеттере и на сервисном уровне)
+    private String name;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "coordinates_id", nullable = false)
@@ -38,11 +34,11 @@ public class Vehicle {
     @Column(name = "creation_date", nullable = false, updatable = false)
     @Convert(converter = ZonedDateTimeConverter.class)
     @NotNull(message = "Поле creationDate не может быть null")
-    private ZonedDateTime creationDate; // Генерируется автоматически при создании
+    private ZonedDateTime creationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", length = 20)
-    private VehicleType type; // Может быть null
+    private VehicleType type;
 
     @Column(name = "engine_power", nullable = false)
     @DecimalMin(value = "0.0", inclusive = false, message = "Значение поля enginePower должно быть больше 0")
@@ -50,7 +46,7 @@ public class Vehicle {
 
     @Column(name = "number_of_wheels")
     @Positive(message = "Значение поля numberOfWheels должно быть больше 0")
-    private Long numberOfWheels; // Может быть null
+    private Long numberOfWheels;
 
     @Column(name = "capacity", nullable = false)
     @NotNull(message = "Поле capacity не может быть null")
@@ -67,7 +63,7 @@ public class Vehicle {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "fuel_type", length = 20)
-    private FuelType fuelType; // Может быть null
+    private FuelType fuelType;
 
     public Vehicle() {
     }
@@ -78,8 +74,6 @@ public class Vehicle {
             creationDate = ZonedDateTime.now();
         }
     }
-
-    /* ------------------------- getters / setters ------------------------- */
 
     public Long getId() {
         return id;

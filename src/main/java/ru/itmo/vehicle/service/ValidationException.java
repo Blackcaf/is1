@@ -1,8 +1,5 @@
 package ru.itmo.vehicle.service;
 
-/**
- * Ошибка бизнес-уровня с картой полей-ошибок для отображения в интерфейсе.
- */
 public class ValidationException extends RuntimeException {
 
     private final java.util.Map<String, String> fieldErrors;

@@ -6,9 +6,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
-/**
- * Самостоятельный связанный объект координат.
- */
 @Entity
 @Table(name = "coordinates")
 public class Coordinates {
@@ -21,11 +18,11 @@ public class Coordinates {
     @NotNull(message = "Поле x не может быть null")
     @Max(value = 862, message = "Максимальное значение поля x: 862")
     @Column(name = "x", nullable = false)
-    private Double x; // Максимальное значение поля: 862
+    private Double x;
 
     @Min(value = -859, message = "Значение поля y должно быть больше -860")
     @Column(name = "y", nullable = false)
-    private int y; // Значение поля должно быть больше -860
+    private int y;
 
     public Coordinates() {
     }
