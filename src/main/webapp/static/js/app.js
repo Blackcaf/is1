@@ -56,7 +56,7 @@ async function apiFetch(path, options = {}) {
         ...options
     });
     let body = null;
-    try { body = await resp.json(); } catch (e) { /* пустой ответ */ }
+    try { body = await resp.json(); } catch (e) { body = null; }
     if (!resp.ok) {
         const err = new Error(body?.error || "Ошибка сервера (" + resp.status + ")");
         err.status = resp.status;
@@ -476,7 +476,15 @@ async function renderSpecialPage() {
         <label>ID: <input type="number" id="op5-id" min="1" style="width:100px"></label>
         <label>Число колёс: <input type="number" id="op5-count" min="1" value="2" style="width:100px"></label>
         <button class="btn" id="op5">Выполнить</button>
-        <div class="result-box" id="r5" style="display:none"></div></div>`;
+        <div class="result-box" id="r5" style="display:none"></div></div>
+
+    <div class="panel"><b>Удаление связанного объекта Coordinates</b><br><br>
+        <div style="color:#666;margin-bottom:8px">Если с объектом Coordinates связаны транспортные средства,
+            выберите объект, к которому их нужно привязать перед удалением.</div>
+        <label>Удаляемый Coordinates: <select id="coord-del"></select></label>
+        <label>Заменить на: <select id="coord-repl"></select></label>
+        <button class="btn danger" id="coord-delete">Удалить и переназначить</button>
+        <div class="result-box" id="rcoord" style="display:none"></div></div>`;
 
     const show = (boxId, html, isError) => {
         const b = document.getElementById(boxId);
@@ -521,6 +529,36 @@ async function renderSpecialPage() {
             refreshTable();
         } catch (e) { show("r5", esc(e.body?.error || e.body?.errors?.wheelsToAdd || e.message), true); }
     };
+
+    const coordDel = document.getElementById("coord-del");
+    const coordRepl = document.getElementById("coord-repl");
+    const loadCoordinates = async () => {
+        let list = [];
+        try { list = await apiFetch("/coordinates"); }
+        catch (e) { show("rcoord", esc(e.message), true); return; }
+        const opts = list.map(c => `<option value="${c.id}">#${c.id}: (${c.x}, ${c.y})</option>`).join("");
+        coordDel.innerHTML = opts;
+        coordRepl.innerHTML = opts;
+        if (list.length < 2) {
+            show("rcoord", "Для удаления с переназначением нужно минимум два объекта Coordinates", true);
+        }
+    };
+    loadCoordinates();
+    document.getElementById("coord-delete").onclick = async () => {
+        const delId = coordDel.value;
+        const replId = coordRepl.value;
+        if (!delId || !replId) { show("rcoord", "Выберите оба объекта Coordinates", true); return; }
+        if (delId === replId) { show("rcoord", "Удаляемый и заменяющий объекты должны различаться", true); return; }
+        if (!confirm(`Удалить Coordinates #${delId} и переназначить связанные Vehicle на #${replId}?`)) return;
+        try {
+            await apiFetch(`/coordinates/${delId}?replacementId=${replId}`, { method: "DELETE" });
+            show("rcoord", `Coordinates #${delId} удалён, связанные транспортные средства переназначены на #${replId}`);
+            refreshTable();
+            loadCoordinates();
+        } catch (e) {
+            show("rcoord", esc(e.body?.errors?.replacementId || e.body?.error || e.message), true);
+        }
+    };
 }
 
 let sseSource = null;
@@ -541,16 +579,20 @@ function connectSse() {
             toast(`Объект «${vehicle.name}» (id=${vehicle.id}) ${
                 name === "created" ? "добавлен другим пользователем" :
                 name === "updated" ? "изменён другим пользователем" : "удалён другим пользователем"}`);
-            refreshTable();
-            if (location.hash === `#/view/${vehicle.id}` && name === "deleted") location.hash = "#/";
-        } catch (err) { /* ignore */ }
+            if (location.hash === `#/view/${vehicle.id}`) {
+                if (name === "deleted") location.hash = "#/";
+                else renderDetailPage(vehicle.id);
+            } else {
+                refreshTable();
+            }
+        } catch (err) { }
     };
     sseSource.addEventListener("created", handler("created"));
     sseSource.addEventListener("updated", handler("updated"));
     sseSource.addEventListener("deleted", handler("deleted"));
 }
 
-window.App = { closeModal, openVehicleForm };
+window.App = { closeModal };
 document.addEventListener("DOMContentLoaded", () => {
     router();
     connectSse();

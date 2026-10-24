@@ -3,6 +3,8 @@ package ru.itmo.vehicle.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.itmo.vehicle.domain.FuelType;
 import ru.itmo.vehicle.domain.Coordinates;
 import ru.itmo.vehicle.domain.Vehicle;
@@ -42,7 +44,7 @@ public class VehicleService {
         vehicle.setId(null);
         vehicle.setCreationDate(null);
         Vehicle saved = repository.save(vehicle);
-        eventBus.publish(VehicleEventBus.Action.CREATED, copyOf(saved));
+        publishAfterCommit(VehicleEventBus.Action.CREATED, saved);
         return saved;
     }
 
@@ -60,7 +62,7 @@ public class VehicleService {
         validate(changes);
         resolveCoordinates(changes);
         Vehicle saved = repository.save(changes);
-        eventBus.publish(VehicleEventBus.Action.UPDATED, copyOf(saved));
+        publishAfterCommit(VehicleEventBus.Action.UPDATED, saved);
         return saved;
     }
 
@@ -69,7 +71,7 @@ public class VehicleService {
         Vehicle v = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Транспортное средство с id=" + id + " не найдено"));
         repository.deleteById(id);
-        eventBus.publish(VehicleEventBus.Action.DELETED, copyOf(v));
+        publishAfterCommit(VehicleEventBus.Action.DELETED, v);
     }
 
     @Transactional(readOnly = true)
@@ -135,7 +137,7 @@ public class VehicleService {
         long current = v.getNumberOfWheels() == null ? 0L : v.getNumberOfWheels();
         v.setNumberOfWheels(current + wheelsToAdd);
         Vehicle saved = repository.save(v);
-        eventBus.publish(VehicleEventBus.Action.UPDATED, copyOf(saved));
+        publishAfterCommit(VehicleEventBus.Action.UPDATED, saved);
         return saved;
     }
 
@@ -154,7 +156,7 @@ public class VehicleService {
         for (Vehicle vehicle : repository.findByCoordinatesId(coordinatesId)) {
             vehicle.setCoordinates(replacement);
             repository.save(vehicle);
-            eventBus.publish(VehicleEventBus.Action.UPDATED, copyOf(vehicle));
+            publishAfterCommit(VehicleEventBus.Action.UPDATED, vehicle);
         }
         coordinatesRepository.delete(oldCoordinates);
     }
@@ -196,6 +198,19 @@ public class VehicleService {
                 .orElseThrow(() -> new ValidationException(
                         Map.of("coordinates", "Выбранный объект Coordinates не найден")));
         vehicle.setCoordinates(existing);
+    }
+
+    private void publishAfterCommit(VehicleEventBus.Action action, Vehicle vehicle) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    eventBus.publish(action, copyOf(vehicle));
+                }
+            });
+        } else {
+            eventBus.publish(action, copyOf(vehicle));
+        }
     }
 
     static Vehicle copyOf(Vehicle src) {

@@ -14,7 +14,7 @@ import ru.itmo.vehicle.service.VehicleService;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+
 @RestController
 @RequestMapping("/api/vehicles")
 public class VehicleController {
@@ -25,7 +25,6 @@ public class VehicleController {
     @Autowired
     private VehicleEventBus eventBus;
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
     @PostMapping
     public ResponseEntity<?> create(@RequestBody VehicleDto dto) {
         try {
@@ -95,14 +94,10 @@ public class VehicleController {
                 emitter.completeWithError(ex);
             }
         };
-        Runnable cleanup = () -> {
-            emitters.remove(emitter);
-            eventBus.unsubscribe(listener);
-        };
+        Runnable cleanup = () -> eventBus.unsubscribe(listener);
         emitter.onCompletion(cleanup);
         emitter.onTimeout(cleanup);
         emitter.onError(e -> cleanup.run());
-        emitters.add(emitter);
         eventBus.subscribe(listener);
         try {
             emitter.send(SseEmitter.event().comment("connected"));

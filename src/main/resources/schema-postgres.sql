@@ -1,7 +1,3 @@
--- Схема БД для ИС «Транспортные средства» (PostgreSQL, схема по имени пользователя)
--- id генерируется средствами БД (GENERATED ALWAYS AS IDENTITY).
--- Все ограничения из описания класса реализованы на уровне БД.
-
 CREATE TABLE IF NOT EXISTS coordinates (
     id     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     x      DOUBLE PRECISION NOT NULL,

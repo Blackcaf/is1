@@ -1,6 +1,5 @@
 :root {
     --bg: #0e1726;
-    --bg-soft: #152238;
     --panel: #f7f4ec;
     --panel-strong: #fffdf7;
     --accent: #f2b84b;
@@ -71,15 +70,6 @@ main {
         var(--bg);
 }
 
-.footer {
-    padding: 14px 34px;
-    font-size: 12px;
-    color: #8192a5;
-    text-align: left;
-    border-top: 1px solid rgba(255,255,255,.08);
-    background: var(--bg);
-}
-
 .panel {
     background: var(--panel);
     border: 1px solid rgba(255,255,255,.08);
@@ -95,7 +85,7 @@ main {
 .toolbar label { font-size: 12px; color: var(--muted); font-weight: 700; }
 .filter-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
-select, input[type=text], input[type=number], input[type=datetime-local] {
+select, input[type=text], input[type=number] {
     padding: 9px 11px;
     border: 1px solid var(--border);
     border-radius: 4px;
@@ -157,7 +147,6 @@ table.grid tr:hover td { background: #fffaf0; }
 .pagination .page-info { color: var(--muted); }
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
-.form-grid .field.full { grid-column: 1 / -1; }
 
 .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
 .field .hint { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
@@ -179,6 +168,7 @@ table.grid tr:hover td { background: #fffaf0; }
 
 .modal {
     background: var(--panel);
+    color: var(--text);
     border-radius: 6px;
     max-width: 720px;
     width: 95%;
@@ -241,7 +231,6 @@ h2.page-title { margin: 0 0 22px; font-size: 32px; letter-spacing: -.05em; color
     .menu { order: 3; flex-basis: 100%; }
     main { padding: 28px 16px 52px; }
     .form-grid { grid-template-columns: 1fr; }
-    .form-grid .field.full { grid-column: auto; }
     h2.page-title { font-size: 26px; }
 }
 

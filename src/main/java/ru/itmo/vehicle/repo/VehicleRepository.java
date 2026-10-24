@@ -1,6 +1,5 @@
 package ru.itmo.vehicle.repo;
 
-import ru.itmo.vehicle.domain.FuelType;
 import ru.itmo.vehicle.domain.Vehicle;
 import ru.itmo.vehicle.domain.VehicleType;
 
@@ -22,10 +21,6 @@ public interface VehicleRepository {
     void deleteById(Long id);
 
     double sumFuelConsumption();
-
-    Optional<Vehicle> minByType();
-
-    long countByFuelTypeGreaterThan(FuelType fuelType);
 
     List<Vehicle> findByType(VehicleType type);
 

@@ -62,7 +62,7 @@ class VehicleServiceTest {
         Vehicle v = vehicle(null, "Quadrocopter", VehicleType.DRONE, FuelType.ELECTRICITY, 5.5);
         Vehicle saved = service.create(v);
 
-        assertNull(saved.getId()); // id генерируется БД, сервис обнуляет переданный
+        assertNull(saved.getId());
         verify(repository).save(any(Vehicle.class));
         verify(listener).onVehicleChanged(eq(VehicleEventBus.Action.CREATED), any(Vehicle.class));
     }
@@ -70,8 +70,8 @@ class VehicleServiceTest {
     @Test
     void createRejectsInvalidVehicle() {
         Vehicle v = vehicle(null, "ok", null, null, 5);
-        ReflectionTestUtils.setField(v, "fuelConsumption", -1.0);   // обходим сеттер
-        ReflectionTestUtils.setField(v.getCoordinates(), "x", 900.0); // x > 862
+        ReflectionTestUtils.setField(v, "fuelConsumption", -1.0);
+        ReflectionTestUtils.setField(v.getCoordinates(), "x", 900.0);
         ValidationException ex = assertThrows(ValidationException.class, () -> service.create(v));
         assertTrue(ex.getFieldErrors().containsKey("fuelConsumption"));
         assertTrue(ex.getFieldErrors().containsKey("coordinates.x"));
@@ -106,11 +106,11 @@ class VehicleServiceTest {
     @Test
     void countFuelTypeGreaterThanUsesOrdinalOrder() {
         when(repository.findAll()).thenReturn(List.of(
-                vehicle(1L, "A", null, FuelType.GASOLINE, 1),      // ordinal 0
-                vehicle(2L, "B", null, FuelType.NUCLEAR, 1),        // ordinal 3 > ELECTRICITY(2)
-                vehicle(3L, "C", null, FuelType.ANTIMATTER, 1),     // ordinal 4 > ELECTRICITY(2)
-                vehicle(4L, "D", null, FuelType.ELECTRICITY, 1),    // не больше самого себя
-                vehicle(5L, "E", null, null, 1)                     // null не учитывается
+                vehicle(1L, "A", null, FuelType.GASOLINE, 1),
+                vehicle(2L, "B", null, FuelType.NUCLEAR, 1),
+                vehicle(3L, "C", null, FuelType.ANTIMATTER, 1),
+                vehicle(4L, "D", null, FuelType.ELECTRICITY, 1),
+                vehicle(5L, "E", null, null, 1)
         ));
         assertEquals(2, service.countFuelTypeGreaterThan(FuelType.ELECTRICITY));
     }
@@ -161,8 +161,8 @@ class VehicleServiceTest {
         Vehicle changes = vehicle(999L, "New", VehicleType.SHIP, FuelType.NUCLEAR, 3);
         Vehicle updated = service.update(5L, changes);
 
-        assertEquals(5L, updated.getId());               // id не меняется
-        assertNotNull(updated.getCreationDate());        // дата создания сохранена
+        assertEquals(5L, updated.getId());
+        assertNotNull(updated.getCreationDate());
         assertEquals("New", updated.getName());
     }
 

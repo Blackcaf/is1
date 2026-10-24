@@ -1,7 +1,6 @@
 package ru.itmo.vehicle.repo;
 
 import org.springframework.stereotype.Repository;
-import ru.itmo.vehicle.domain.FuelType;
 import ru.itmo.vehicle.domain.Vehicle;
 import ru.itmo.vehicle.domain.VehicleType;
 
@@ -95,9 +94,9 @@ public class VehicleRepositoryImpl implements VehicleRepository {
             if ("v.name".equals(col)) {
                 jpql.append(" WHERE LOWER(v.name) LIKE :filterVal");
             } else if ("v.type".equals(col) || "v.fuelType".equals(col)) {
-                jpql.append(" WHERE LOWER(CAST(").append(col).append(" AS STRING)) LIKE :filterVal");
+                jpql.append(" WHERE LOWER(CAST(").append(col).append(" AS VARCHAR)) LIKE :filterVal");
             } else {
-                jpql.append(" WHERE CAST(").append(col).append(" AS STRING) LIKE :filterVal");
+                jpql.append(" WHERE CAST(").append(col).append(" AS VARCHAR) LIKE :filterVal");
             }
         }
     }
@@ -112,21 +111,6 @@ public class VehicleRepositoryImpl implements VehicleRepository {
         Double res = em.createQuery("SELECT COALESCE(SUM(v.fuelConsumption), 0.0) FROM Vehicle v", Double.class)
                 .getSingleResult();
         return res == null ? 0.0 : res;
-    }
-
-    @Override
-    public Optional<Vehicle> minByType() {
-        List<Vehicle> list = em.createQuery(
-                "SELECT v FROM Vehicle v WHERE v.type IS NOT NULL ORDER BY v.type ASC", Vehicle.class)
-                .setMaxResults(1).getResultList();
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
-    }
-
-    @Override
-    public long countByFuelTypeGreaterThan(FuelType fuelType) {
-        return em.createQuery("SELECT COUNT(v) FROM Vehicle v WHERE v.fuelType IS NOT NULL AND v.fuelType > :ft", Long.class)
-                .setParameter("ft", fuelType)
-                .getSingleResult();
     }
 
     @Override
