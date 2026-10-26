@@ -3,6 +3,7 @@
     <deployment>
         <exclude-subsystems>
             <subsystem name="jpa"/>
+            <subsystem name="jsf"/>
         </exclude-subsystems>
     </deployment>
 </jboss-deployment-structure>

@@ -2,10 +2,10 @@
 
 const API = (() => {
     const path = new URL(document.currentScript.src, location.href).pathname;
-    const staticMarker = '/static/';
-    const staticIndex = path.indexOf(staticMarker);
-    return staticIndex >= 0
-        ? path.substring(0, staticIndex) + '/api'
+    const scriptMarker = '/js/';
+    const scriptIndex = path.lastIndexOf(scriptMarker);
+    return scriptIndex >= 0
+        ? path.substring(0, scriptIndex) + '/api'
         : '/api';
 })();
 
@@ -565,14 +565,6 @@ let sseSource = null;
 function connectSse() {
     if (sseSource) sseSource.close();
     sseSource = new EventSource(`${API}/vehicles/events`);
-    sseSource.onopen = () => {
-        const s = document.getElementById("sse-status");
-        s.textContent = "● online"; s.classList.add("online");
-    };
-    sseSource.onerror = () => {
-        const s = document.getElementById("sse-status");
-        s.textContent = "● offline"; s.classList.remove("online");
-    };
     const handler = name => e => {
         try {
             const { vehicle } = JSON.parse(e.data);
