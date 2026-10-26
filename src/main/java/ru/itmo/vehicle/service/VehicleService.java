@@ -11,6 +11,8 @@ import ru.itmo.vehicle.domain.Vehicle;
 import ru.itmo.vehicle.domain.VehicleType;
 import ru.itmo.vehicle.repo.VehicleRepository;
 import ru.itmo.vehicle.repo.CoordinatesRepository;
+import ru.itmo.vehicle.exception.ResourceNotFoundException;
+import ru.itmo.vehicle.exception.ValidationException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.groups.Default;
@@ -24,18 +26,18 @@ import java.util.TreeMap;
 
 @Service
 public class VehicleService {
+    private final VehicleRepository repository;
+    private final CoordinatesRepository coordinatesRepository;
+    private final Validator validator;
+    private final VehicleEventBus eventBus;
 
-    @Autowired
-    private VehicleRepository repository;
-
-    @Autowired(required = false)
-    private CoordinatesRepository coordinatesRepository;
-
-    @Autowired
-    private Validator validator;
-
-    @Autowired
-    private VehicleEventBus eventBus;
+    public VehicleService(VehicleRepository repository, CoordinatesRepository coordinatesRepository,
+                          Validator validator, VehicleEventBus eventBus) {
+        this.repository = repository;
+        this.coordinatesRepository = coordinatesRepository;
+        this.validator = validator;
+        this.eventBus = eventBus;
+    }
 
     @Transactional
     public Vehicle create(Vehicle vehicle) {
@@ -48,6 +50,10 @@ public class VehicleService {
         return saved;
     }
 
+    public Vehicle getRequired(Long id) {
+        return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Vehicle with id=" + id + " not found"));
+    }
+
     @Transactional(readOnly = true)
     public Optional<Vehicle> getById(Long id) {
         return repository.findById(id);
@@ -56,7 +62,7 @@ public class VehicleService {
     @Transactional
     public Vehicle update(Long id, Vehicle changes) {
         Vehicle existing = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Транспортное средство с id=" + id + " не найдено"));
+                .orElseThrow(() -> new ResourceNotFoundException("Транспортное средство с id=" + id + " не найдено"));
         changes.setId(existing.getId());
         changes.setCreationDate(existing.getCreationDate());
         validate(changes);
@@ -69,7 +75,7 @@ public class VehicleService {
     @Transactional
     public void delete(Long id) {
         Vehicle v = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Транспортное средство с id=" + id + " не найдено"));
+                .orElseThrow(() -> new ResourceNotFoundException("Транспортное средство с id=" + id + " не найдено"));
         repository.deleteById(id);
         publishAfterCommit(VehicleEventBus.Action.DELETED, v);
     }
@@ -92,6 +98,10 @@ public class VehicleService {
         return repository.sumFuelConsumption();
     }
 
+    public Vehicle minByTypeRequired() {
+        return minByType().orElseThrow(() -> new ResourceNotFoundException("No vehicle with a non-null type was found"));
+    }
+
     @Transactional(readOnly = true)
     public Optional<Vehicle> minByType() {
         List<Vehicle> all = repository.findAll();
@@ -103,6 +113,14 @@ public class VehicleService {
             }
         }
         return Optional.ofNullable(best);
+    }
+
+    public long countFuelTypeGreaterThan(String fuelType) {
+        try {
+            return countFuelTypeGreaterThan(FuelType.valueOf(fuelType.toUpperCase()));
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            throw new ValidationException(Map.of("fuelType", "Invalid fuel type: " + fuelType));
+        }
     }
 
     @Transactional(readOnly = true)
@@ -119,6 +137,14 @@ public class VehicleService {
         return count;
     }
 
+    public List<Vehicle> findByType(String type) {
+        try {
+            return findByType(VehicleType.valueOf(type.toUpperCase()));
+        } catch (IllegalArgumentException | NullPointerException exception) {
+            throw new ValidationException(Map.of("type", "Invalid vehicle type: " + type));
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<Vehicle> findByType(VehicleType type) {
         if (type == null) {
@@ -133,7 +159,7 @@ public class VehicleService {
             throw new ValidationException(Map.of("wheelsToAdd", "Число добавляемых колёс должно быть больше 0"));
         }
         Vehicle v = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Транспортное средство с id=" + id + " не найдено"));
+                .orElseThrow(() -> new ResourceNotFoundException("Транспортное средство с id=" + id + " не найдено"));
         long current = v.getNumberOfWheels() == null ? 0L : v.getNumberOfWheels();
         v.setNumberOfWheels(current + wheelsToAdd);
         Vehicle saved = repository.save(v);
@@ -147,9 +173,9 @@ public class VehicleService {
             throw new IllegalStateException("Репозиторий Coordinates не настроен");
         }
         Coordinates oldCoordinates = coordinatesRepository.findById(coordinatesId)
-                .orElseThrow(() -> new NotFoundException("Coordinates с id=" + coordinatesId + " не найден"));
+                .orElseThrow(() -> new ResourceNotFoundException("Coordinates с id=" + coordinatesId + " не найден"));
         Coordinates replacement = coordinatesRepository.findById(replacementId)
-                .orElseThrow(() -> new NotFoundException("Coordinates с id=" + replacementId + " не найден"));
+                .orElseThrow(() -> new ResourceNotFoundException("Coordinates с id=" + replacementId + " не найден"));
         if (coordinatesId.equals(replacementId)) {
             throw new ValidationException(Map.of("replacementId", "Нужно выбрать другой объект Coordinates"));
         }
@@ -231,11 +257,5 @@ public class VehicleService {
         c.setFuelConsumption(src.getFuelConsumption());
         c.setFuelType(src.getFuelType());
         return c;
-    }
-
-    public static class NotFoundException extends RuntimeException {
-        public NotFoundException(String message) {
-            super(message);
-        }
     }
 }

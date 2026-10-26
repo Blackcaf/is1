@@ -1,17 +1,20 @@
 package ru.itmo.vehicle.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.itmo.vehicle.domain.Coordinates;
 import ru.itmo.vehicle.repo.CoordinatesRepository;
+import ru.itmo.vehicle.exception.ValidationException;
 
 import java.util.List;
 
 @Service
 public class CoordinatesService {
-    @Autowired
-    private CoordinatesRepository repository;
+    private final CoordinatesRepository repository;
+
+    public CoordinatesService(CoordinatesRepository repository) {
+        this.repository = repository;
+    }
 
     @Transactional(readOnly = true)
     public List<Coordinates> findAll() {

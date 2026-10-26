@@ -9,9 +9,11 @@ import ru.itmo.vehicle.domain.FuelType;
 import ru.itmo.vehicle.domain.Vehicle;
 import ru.itmo.vehicle.domain.VehicleType;
 import ru.itmo.vehicle.repo.VehicleRepository;
-import ru.itmo.vehicle.service.ValidationException;
+import ru.itmo.vehicle.repo.CoordinatesRepository;
+import ru.itmo.vehicle.exception.ValidationException;
 import ru.itmo.vehicle.service.VehicleEventBus;
 import ru.itmo.vehicle.service.VehicleService;
+import ru.itmo.vehicle.exception.ResourceNotFoundException;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -27,6 +29,7 @@ class VehicleServiceTest {
     private VehicleService service;
     private VehicleRepository repository;
     private VehicleEventBus eventBus;
+    private CoordinatesRepository coordinatesRepository;
 
     private static Vehicle vehicle(Long id, String name, VehicleType type, FuelType fuel, double fc) {
         Vehicle v = new Vehicle();
@@ -44,13 +47,11 @@ class VehicleServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new VehicleService();
         repository = mock(VehicleRepository.class);
+        CoordinatesRepository coordinatesRepository = mock(CoordinatesRepository.class);
         eventBus = new VehicleEventBus();
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        ReflectionTestUtils.setField(service, "repository", repository);
-        ReflectionTestUtils.setField(service, "validator", validator);
-        ReflectionTestUtils.setField(service, "eventBus", eventBus);
+        service = new VehicleService(repository, coordinatesRepository, validator, eventBus);
     }
 
     @Test
@@ -117,7 +118,7 @@ class VehicleServiceTest {
 
     @Test
     void findByTypeValidatesInput() {
-        assertThrows(ValidationException.class, () -> service.findByType(null));
+        assertThrows(ValidationException.class, () -> service.findByType((VehicleType) null));
         when(repository.findByType(VehicleType.BOAT)).thenReturn(List.of(vehicle(1L, "Boat", VehicleType.BOAT, null, 1)));
         assertEquals(1, service.findByType(VehicleType.BOAT).size());
     }
@@ -172,7 +173,7 @@ class VehicleServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(v));
         service.delete(1L);
         verify(repository).deleteById(1L);
-        assertThrows(VehicleService.NotFoundException.class, () -> service.delete(404L));
+        assertThrows(ResourceNotFoundException.class, () -> service.delete(404L));
     }
 
     @Test
